@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vehicle Distance Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+<h1>🚗 Vehicle Distance Tracker</h1>
+
+<form method="POST" enctype="multipart/form-data">
+    <input type="file" name="file" required>
+    <button type="submit">Analyze</button>
+</form>
+
+{% if result %}
+<div class="results">
+    <h3>Results</h3>
+    <p>Trapezoidal Distance: <b>{{ result.trap }} m</b></p>
+    <p>Simpson Distance: <b>{{ result.simp }} m</b></p>
+    <p>Difference: <b>{{ result.diff }} m</b></p>
+</div>
+
+<img src="/static/result.png">
+{% endif %}
+
+</div>
+
+</body>
+</html>
