@@ -35,7 +35,6 @@ def actual_distance(time, speed):
     
     for i in range(1, len(time)):
         delta_t = time[i] - time[i-1]
-        # Distance for this interval = Speed × Δt
         distance_segment = speed[i] * delta_t
         cumulative[i] = cumulative[i-1] + distance_segment
     
