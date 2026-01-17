@@ -25,22 +25,60 @@ def simpsons_rule(time, speed):
         cumulative[-1] = cumulative[-2] + (h/2)*(speed[-1] + speed[-2])
     return cumulative[-1], cumulative
 
-def plot_results(time, speed, dist_trap, dist_simp):
-    plt.figure(figsize=(8,6))
-    plt.subplot(2,1,1)
-    plt.plot(time, speed, marker='o')
-    plt.title("Speed vs Time")
-    plt.grid()
+def actual_distance(time, speed):
+    """
+    Calculate actual distance using rectangle method.
+    Distance_i = Speed_i × Δt_i
+    Total Distance = Σ(Speed_i × Δt_i)
+    """
+    cumulative = np.zeros(len(time))
+    
+    for i in range(1, len(time)):
+        delta_t = time[i] - time[i-1]
+        # Distance for this interval = Speed × Δt
+        distance_segment = speed[i] * delta_t
+        cumulative[i] = cumulative[i-1] + distance_segment
+    
+    return cumulative[-1], cumulative
 
-    plt.subplot(2,1,2)
-    plt.plot(time, dist_trap, label="Trapezoidal")
-    plt.plot(time, dist_simp, label="Simpson")
-    plt.title("Cumulative Distance")
+def plot_results(time, speed, dist_actual, dist_trap, dist_simp):
+    fig = plt.figure(figsize=(10, 10))
+    
+    # Speed vs Time
+    plt.subplot(3, 1, 1)
+    plt.plot(time, speed, marker='o', color='#3b82f6', linewidth=2, markersize=5)
+    plt.fill_between(time, speed, alpha=0.3, color='#3b82f6')
+    plt.title("Speed vs Time", fontsize=12, fontweight='bold')
+    plt.xlabel("Time (s)")
+    plt.ylabel("Speed (m/s)")
+    plt.grid(alpha=0.3)
+
+    # Cumulative Distance Comparison
+    plt.subplot(3, 1, 2)
+    plt.plot(time, dist_actual, label="Actual (Rectangle Method)", linewidth=3, color='#000000', linestyle='-', alpha=0.7)
+    plt.plot(time, dist_trap, label="Trapezoidal Rule", marker='s', linewidth=2, color='#ef4444', markersize=4)
+    plt.plot(time, dist_simp, label="Simpson's Rule", marker='^', linewidth=2, color='#22c55e', markersize=4)
+    plt.title("Cumulative Distance Comparison", fontsize=12, fontweight='bold')
+    plt.xlabel("Time (s)")
+    plt.ylabel("Distance (m)")
     plt.legend()
-    plt.grid()
+    plt.grid(alpha=0.3)
+
+    # Error Analysis
+    plt.subplot(3, 1, 3)
+    error_trap = np.abs(dist_actual - dist_trap)
+    error_simp = np.abs(dist_actual - dist_simp)
+    
+    plt.plot(time, error_trap, label="Trapezoidal Error", marker='s', linewidth=2, color='#ef4444', markersize=4)
+    plt.plot(time, error_simp, label="Simpson's Error", marker='^', linewidth=2, color='#22c55e', markersize=4)
+    plt.title("Absolute Error vs Actual Distance", fontsize=12, fontweight='bold')
+    plt.xlabel("Time (s)")
+    plt.ylabel("Absolute Error (m)")
+    plt.legend()
+    plt.grid(alpha=0.3)
 
     plt.tight_layout()
-    plt.savefig("static/result.png")
+    plt.savefig("static/result.png", dpi=150, bbox_inches='tight')
     plt.close()
 
 @app.route("/", methods=["GET", "POST"])
@@ -53,15 +91,29 @@ def index():
         time = df["Time (s)"].values
         speed = df["Speed (m/s)"].values
 
+        # Calculate actual distance using rectangle method
+        actual_total, actual_dist = actual_distance(time, speed)
+        
+        # Calculate distances using numerical methods
         trap_total, trap_dist = trapezoidal_rule(time, speed)
         simp_total, simp_dist = simpsons_rule(time, speed)
 
-        plot_results(time, speed, trap_dist, simp_dist)
+        # Calculate final errors
+        trap_error = abs(actual_total - trap_total)
+        simp_error = abs(actual_total - simp_total)
+        trap_rel_error = (trap_error / actual_total) * 100 if actual_total != 0 else 0
+        simp_rel_error = (simp_error / actual_total) * 100 if actual_total != 0 else 0
+
+        plot_results(time, speed, actual_dist, trap_dist, simp_dist)
 
         result = {
-            "trap": round(trap_total, 2),
-            "simp": round(simp_total, 2),
-            "diff": round(abs(trap_total - simp_total), 2)
+            "actual": round(actual_total, 4),
+            "trap": round(trap_total, 4),
+            "simp": round(simp_total, 4),
+            "trap_error": round(trap_error, 4),
+            "simp_error": round(simp_error, 4),
+            "trap_rel_error": round(trap_rel_error, 4),
+            "simp_rel_error": round(simp_rel_error, 4)
         }
 
     return render_template("index.html", result=result)

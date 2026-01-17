@@ -17,13 +17,44 @@
 
 {% if result %}
 <div class="results">
-    <h3>Results</h3>
-    <p>Trapezoidal Distance: <b>{{ result.trap }} m</b></p>
-    <p>Simpson Distance: <b>{{ result.simp }} m</b></p>
-    <p>Difference: <b>{{ result.diff }} m</b></p>
+    <h3>📏 Distance Calculations</h3>
+    <div class="result-grid">
+        <div class="result-card actual">
+            <span class="label">Actual Distance (Rectangle Method):</span>
+            <span class="value">{{ result.actual }} m</span>
+        </div>
+        <div class="result-card trap">
+            <span class="label">Trapezoidal Rule:</span>
+            <span class="value">{{ result.trap }} m</span>
+        </div>
+        <div class="result-card simp">
+            <span class="label">Simpson's Rule:</span>
+            <span class="value">{{ result.simp }} m</span>
+        </div>
+    </div>
 </div>
 
-<img src="/static/result.png">
+<div class="error-section">
+    <h3>⚠️ Final Error Analysis</h3>
+    <div class="error-grid">
+        <div class="error-card trap-error">
+            <h4>Trapezoidal Rule</h4>
+            <p>Absolute Error: <b>{{ result.trap_error }} m</b></p>
+            <p>Relative Error: <b>{{ result.trap_rel_error }} %</b></p>
+        </div>
+        <div class="error-card simp-error">
+            <h4>Simpson's Rule</h4>
+            <p>Absolute Error: <b>{{ result.simp_error }} m</b></p>
+            <p>Relative Error: <b>{{ result.simp_rel_error }} %</b></p>
+        </div>
+    </div>
+    <div class="note">
+        <p><strong>Actual Distance Calculation:</strong> Distance = Σ(Speed<sub>i</sub> × Δt<sub>i</sub>), where Δt<sub>i</sub> = Time<sub>i</sub> - Time<sub>i-1</sub></p>
+        <p><strong>Error:</strong> Shows how much each numerical integration method deviates from the actual discrete calculation.</p>
+    </div>
+</div>
+
+<img src="/static/result.png?{{ range(1, 10000) | random }}">
 {% endif %}
 
 </div>
